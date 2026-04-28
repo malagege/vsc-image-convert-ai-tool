@@ -4,6 +4,10 @@
   "description": "A VS Code extension that lets AI (Copilot) convert images to WebP or AVIF format using configurable settings.",
   "version": "0.1.0",
   "publisher": "malagege",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/malagege/vsc-image-convert-ai-tool.git"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },
