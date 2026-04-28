@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext): void {
             }
             const filePath = editor.document.uri.fsPath;
             const config = vscode.workspace.getConfiguration('imageConvert');
-            const { convertImages } = await import('./imageConverter');
+            const { convertImages } = await import('./imageConverter.js');
             const results = await convertImages(
                 [filePath],
                 config.get('defaultOutputFormat', 'webp'),
