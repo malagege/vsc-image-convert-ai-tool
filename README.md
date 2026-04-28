@@ -17,7 +17,7 @@ A Visual Studio Code extension that lets **GitHub Copilot / AI** convert images 
 
 ## Requirements
 
-- Visual Studio Code **1.90** or later (Language Model Tools API)
+- Visual Studio Code **1.95** or later (Language Model Tools API)
 - Node.js **18** or later (needed to build from source)
 
 ---
