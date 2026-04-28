@@ -9,7 +9,7 @@
     "url": "https://github.com/malagege/vsc-image-convert-ai-tool.git"
   },
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.95.0"
   },
   "categories": [
     "AI",
@@ -67,6 +67,7 @@
     "languageModelTools": [
       {
         "name": "imageConvert_convert",
+        "toolReferenceName": "imageConvert_convert",
         "tags": [
           "image",
           "convert",
@@ -75,7 +76,9 @@
         ],
         "displayName": "Convert Images",
         "modelDescription": "Converts one or more images (JPG, JPEG, PNG, WebP, TIFF, AVIF, GIF, SVG) to WebP or AVIF format. Falls back to the extension default settings for any omitted parameters.",
+        "userDescription": "Convert one or more images to WebP or AVIF.",
         "canBeReferencedInPrompt": true,
+        "icon": "$(file-media)",
         "inputSchema": {
           "type": "object",
           "properties": {
@@ -126,6 +129,9 @@
       }
     ]
   },
+  "extensionDependencies": [
+    "GitHub.copilot-chat"
+  ],
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -135,7 +141,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@types/vscode": "^1.90.0",
+    "@types/vscode": "^1.95.0",
     "typescript": "^5.4.0"
   },
   "dependencies": {
