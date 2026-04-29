@@ -7,6 +7,7 @@ import sharp from 'sharp';
 export const READING_FORMATS = ['.jpg', '.jpeg', '.png', '.webp', '.tiff', '.avif', '.gif', '.svg'];
 export const WRITING_FORMATS = ['webp', 'avif'] as const;
 export type OutputFormat = typeof WRITING_FORMATS[number];
+export type ConversionLogger = (message: string) => void;
 
 export interface ConversionResult {
     success?: boolean;
@@ -95,20 +96,25 @@ export async function convertImages(
     outputFormat: OutputFormat,
     quality: number = 80,
     outputDirectory?: string,
-    forceOverwrite: boolean = false
+    forceOverwrite: boolean = false,
+    logger?: ConversionLogger
 ): Promise<ConversionResult[]> {
+    logger?.(`Resolving ${files.length} input path(s) for ${outputFormat.toUpperCase()} conversion.`);
     const actualFiles = await resolveFilePaths(files);
 
     if (actualFiles.length === 0) {
+        logger?.('No valid image files were resolved from the provided input.');
         return [{ success: false, error: 'No valid image files found for the provided paths or patterns.' }];
     }
 
+    logger?.(`Resolved ${actualFiles.length} file(s): ${actualFiles.join(', ')}`);
     const results: ConversionResult[] = [];
 
     for (const filePath of actualFiles) {
         try {
             const statsOriginal = await stat(filePath);
             const sizeOriginalKB = (statsOriginal.size / 1024).toFixed(2);
+            logger?.(`Preparing to convert ${filePath} (${sizeOriginalKB} KB).`);
 
             const useOutputDir = outputDirectory && await isValidDirectory(outputDirectory)
                 ? outputDirectory
@@ -116,9 +122,11 @@ export async function convertImages(
 
             const fileName = path.basename(filePath, path.extname(filePath));
             const outputFilePath = path.join(useOutputDir, `${fileName}.${outputFormat}`);
+            logger?.(`Output path resolved to ${outputFilePath}.`);
 
             const exists = await fileExists(outputFilePath);
             if (exists && !forceOverwrite) {
+                logger?.(`Skipping ${filePath} because ${outputFilePath} already exists and overwrite is disabled.`);
                 results.push({
                     status: 'skipped',
                     file: outputFilePath,
@@ -127,6 +135,7 @@ export async function convertImages(
                 continue;
             }
 
+            logger?.(`Starting Sharp conversion for ${filePath} with quality ${quality}.`);
             await sharp(filePath)
                 .toFormat(outputFormat, { quality })
                 .toFile(outputFilePath);
@@ -146,11 +155,14 @@ export async function convertImages(
                 newSize: `${sizeNewKB} KB`,
                 sizeReduction
             });
+            logger?.(`Finished converting ${filePath} -> ${outputFilePath} (${sizeOriginalKB} KB -> ${sizeNewKB} KB, ${sizeReduction}).`);
         } catch (err) {
             const e = err as Error;
+            logger?.(`Conversion failed for ${filePath}: ${e.message}`);
             results.push({ success: false, original: filePath, error: e.message });
         }
     }
 
+    logger?.(`Conversion completed with ${results.filter(result => result.success).length} success(es), ${results.filter(result => result.status === 'skipped').length} skipped, ${results.filter(result => result.success === false && result.status !== 'skipped').length} failure(s).`);
     return results;
 }

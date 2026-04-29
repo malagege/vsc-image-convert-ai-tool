@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { convertImages, OutputFormat, READING_FORMATS } from '../imageConverter';
+import { logMessage, showLogs } from '../logging';
 
 interface ImageConvertInput {
     files: string[];
@@ -22,6 +23,12 @@ export class ImageConvertTool implements vscode.LanguageModelTool<ImageConvertIn
     ): Promise<vscode.LanguageModelToolResult> {
         const config = vscode.workspace.getConfiguration('imageConvert');
         const input = options.input;
+        const logs: string[] = [];
+        const logger = (message: string): void => {
+            const line = `[Tool] ${message}`;
+            logs.push(line);
+            logMessage(line);
+        };
 
         const outputFormat: OutputFormat =
             input.outputFormat ?? config.get<OutputFormat>('defaultOutputFormat', 'webp');
@@ -34,12 +41,14 @@ export class ImageConvertTool implements vscode.LanguageModelTool<ImageConvertIn
                 ? input.forceOverwrite
                 : config.get<boolean>('forceOverwrite', false);
 
+        logger(`Tool invoked with ${input.files.length} requested file path(s).`);
         const results = await convertImages(
             input.files,
             outputFormat,
             quality,
             outputDirectory || undefined,
-            forceOverwrite
+            forceOverwrite,
+            logger
         );
 
         const summary = results.map(r => {
@@ -54,6 +63,7 @@ export class ImageConvertTool implements vscode.LanguageModelTool<ImageConvertIn
 
         return new vscode.LanguageModelToolResult([
             new vscode.LanguageModelTextPart(summary || 'No files were processed.'),
+            new vscode.LanguageModelTextPart('\n\nLogs:\n' + (logs.join('\n') || 'No log output.')),
             new vscode.LanguageModelTextPart('\n\nRaw results:\n' + JSON.stringify(results, null, 2))
         ]);
     }
@@ -96,6 +106,8 @@ export async function convertSelectedFiles(context: vscode.ExtensionContext): Pr
     const quality = config.get<number>('defaultQuality', 80);
     const outputDirectory = config.get<string>('defaultOutputDirectory', '') || undefined;
     const forceOverwrite = config.get<boolean>('forceOverwrite', false);
+    showLogs();
+    logMessage(`Workspace conversion requested for ${files.length} file(s).`);
 
     await vscode.window.withProgress(
         {
@@ -104,7 +116,14 @@ export async function convertSelectedFiles(context: vscode.ExtensionContext): Pr
             cancellable: false
         },
         async () => {
-            const results = await convertImages(files, outputFormat, quality, outputDirectory, forceOverwrite);
+            const results = await convertImages(
+                files,
+                outputFormat,
+                quality,
+                outputDirectory,
+                forceOverwrite,
+                message => logMessage(`[Command] ${message}`)
+            );
 
             const succeeded = results.filter(r => r.success).length;
             const skipped = results.filter(r => r.status === 'skipped').length;
@@ -115,6 +134,7 @@ export async function convertSelectedFiles(context: vscode.ExtensionContext): Pr
             if (failed > 0) { parts.push(`Failed: ${failed}`); }
 
             const message = parts.join(' | ');
+            logMessage(`Workspace conversion finished — ${message}.`);
             if (failed > 0) {
                 vscode.window.showWarningMessage(`Image conversion done — ${message}`);
             } else {

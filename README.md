@@ -12,6 +12,7 @@ A Visual Studio Code extension that lets **GitHub Copilot / AI** convert images 
 - 🖼️ **Supported input formats**: `.jpg`, `.jpeg`, `.png`, `.webp`, `.tiff`, `.avif`, `.gif`, `.svg`
 - 📤 **Supported output formats**: `webp`, `avif`
 - 📊 **Size reporting** – After each conversion, original size, new size, and the percentage saved are reported.
+- 🪵 **Output logs** – Conversion progress and failures are written to the **Image Convert AI Tool** output channel for troubleshooting.
 
 ---
 
