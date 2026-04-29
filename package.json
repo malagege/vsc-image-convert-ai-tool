@@ -1,0 +1,151 @@
+{
+  "name": "vsc-image-convert-ai-tool",
+  "displayName": "Image Convert AI Tool",
+  "description": "A VS Code extension that lets AI (Copilot) convert images to WebP or AVIF format using configurable settings.",
+  "version": "0.1.0",
+  "publisher": "malagege",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/malagege/vsc-image-convert-ai-tool.git"
+  },
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "image",
+    "convert",
+    "webp",
+    "avif",
+    "copilot",
+    "ai",
+    "mcp"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Image Convert AI Tool",
+      "properties": {
+        "imageConvert.defaultOutputFormat": {
+          "type": "string",
+          "enum": [
+            "webp",
+            "avif"
+          ],
+          "enumDescriptions": [
+            "Convert to WebP format",
+            "Convert to AVIF format"
+          ],
+          "default": "webp",
+          "description": "Default output format for image conversion."
+        },
+        "imageConvert.defaultQuality": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 80,
+          "description": "Default quality (1-100) for image conversion."
+        },
+        "imageConvert.defaultOutputDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Default output directory for converted images. Leave empty to save alongside the original file."
+        },
+        "imageConvert.forceOverwrite": {
+          "type": "boolean",
+          "default": false,
+          "description": "Force overwrite existing converted files. Set to true to always overwrite."
+        }
+      }
+    },
+    "languageModelTools": [
+      {
+        "name": "imageConvert_convert",
+        "toolReferenceName": "imageConvert_convert",
+        "tags": [
+          "image",
+          "convert",
+          "webp",
+          "avif"
+        ],
+        "displayName": "Convert Images",
+        "modelDescription": "Converts one or more images (JPG, JPEG, PNG, WebP, TIFF, AVIF, GIF, SVG) to WebP or AVIF format. Falls back to the extension default settings for any omitted parameters.",
+        "userDescription": "Convert one or more images to WebP or AVIF.",
+        "canBeReferencedInPrompt": true,
+        "icon": "$(file-media)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Array of absolute image file paths or glob patterns (e.g. /project/images/*.png) to convert. Supported input formats: .jpg, .jpeg, .png, .webp, .tiff, .avif, .gif, .svg"
+            },
+            "outputFormat": {
+              "type": "string",
+              "enum": [
+                "webp",
+                "avif"
+              ],
+              "description": "Target format. Defaults to the imageConvert.defaultOutputFormat setting."
+            },
+            "quality": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Conversion quality (1-100). Defaults to the imageConvert.defaultQuality setting."
+            },
+            "outputDirectory": {
+              "type": "string",
+              "description": "Directory where converted files are saved. Defaults to the imageConvert.defaultOutputDirectory setting (same folder as source if empty)."
+            },
+            "forceOverwrite": {
+              "type": "boolean",
+              "description": "Overwrite existing files. Defaults to the imageConvert.forceOverwrite setting."
+            }
+          },
+          "required": [
+            "files"
+          ]
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "imageConvert.convertCurrentFile",
+        "title": "Image Convert: Convert Current File"
+      },
+      {
+        "command": "imageConvert.convertWorkspaceImages",
+        "title": "Image Convert: Select and Convert Images"
+      }
+    ]
+  },
+  "extensionDependencies": [
+    "GitHub.copilot-chat"
+  ],
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.95.0",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "fast-glob": "^3.3.3",
+    "sharp": "^0.33.0"
+  }
+}
